@@ -7,7 +7,7 @@ usage() {
 	exit 3
 }
 copy() {
-	cp "$filedir/$1" "$2"
+	cp -r "$filedir/$1" "$2"
 }
 
 copy_if_ne() {
@@ -18,11 +18,23 @@ copy_if_ne() {
   fi 
 }
 install() {
-	dpkg -l $1 2>&1 > /dev/null
-	if [ "$?" -eq 0 ]; then
-		return
+  if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    apt-get -y install $1
 	fi
-	apt-get -y install $1
+}
+
+pip_install() {
+  pip show -q $1
+  if [ "$?" -eq 0 ]; then
+    return
+  fi
+  pip install $1
+}
+
+gem_install() {
+  if [ "`gem list -i $1`" = "false" ]; then
+    echo "install $1!"
+  fi
 }
 basic() {
 # vim
@@ -43,7 +55,19 @@ basic() {
 tools() {
   install gcc
   install g++
-  install pip
+  install libssl-dev
+# gdb
+  install gdb
+  copy .gdb .
+  copy .gdbinit .
+# python tools
+  install python-pip
+  pip_install pwntools
+  pip_install ipython
+# ruby tools
+  install gem
+  gem_install pry
+  gem_install heapinfo
 }
 
 adv() {
