@@ -33,7 +33,7 @@ pip_install() {
 
 gem_install() {
   if [ "`gem list -i $1`" = "false" ]; then
-    echo "install $1!"
+    gem install $1
   fi
 }
 basic() {
