@@ -58,6 +58,7 @@ tools() {
   install libssl-dev
 # gdb
   install gdb
+  git clone https://github.com/longld/peda.git ~/peda
   copy .gdb .
   copy .gdbinit .
 # python tools
