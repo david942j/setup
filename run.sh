@@ -17,9 +17,10 @@ copy_if_ne() {
     echo "File $PWD/$2 exists."
   fi 
 }
+
 install() {
   if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    apt-get -y install $1
+    sudo apt-get -y install $1
   fi
 }
 
@@ -40,21 +41,37 @@ basic() {
 # vim
   install vim
   copy_if_ne .vimrc .vimrc
-  install ruby2.3
   install curl
 # oh-my-zsh
   install zsh
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
   copy_if_ne johnson.zsh-theme "$HOME/.oh-my-zsh/themes"
-  perl -i -pe's/="robbyrussell/="johnson/g' "$HOME/.zshrc"
+  copy .zshrc .zshrc
 # tmux
   install tmux
   copy_if_ne .tmux.conf .tmux.conf
 }
 
+install_python() {
+  curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+  pyenv install 2.7.13
+  pyenv global 2.7.13
+}
+
+install_ruby() {
+  git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+  cd ~/.rbenv && src/configure && make -C src && cd -
+  git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+  install libreadline-dev
+  rbenv install 2.3.3
+  rbenv global 2.3.3
+  source ~/.zshrc
+}
+
 tools() {
   install gcc
   install g++
+  install make
   install libssl-dev
 # gdb
   install gdb
@@ -62,13 +79,16 @@ tools() {
   copy .gdb .
   copy .gdbinit .
 # python tools
-  install python-pip
-  pip_install pwntools
+  install_python
   pip_install ipython
+  pip_install pwntools
+# ruby
+  install_ruby
 # ruby tools
-  install gem
   gem_install pry
   gem_install heapinfo
+  gem_install pwntools
+  gem_install one_gadget
 }
 
 adv() {
